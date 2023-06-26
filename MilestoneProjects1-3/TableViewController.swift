@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  TableViewController.swift
 //  MilestoneProjects1-3
 //
 //  Created by Антон Кашников on 22.05.2023.
@@ -8,14 +8,25 @@
 import UIKit
 
 final class TableViewController: UITableViewController {
-    var flags = [String]()
+    // MARK: - Private Properties
+    private var flags = [String]()
 
+    // MARK: - UIViewController
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationController?.navigationBar.prefersLargeTitles = true
         title = "Country flags"
         
+        performSelector(inBackground: #selector(loadImages), with: nil)
+    }
+
+    // MARK: - Private Methods
+    private func getCountryName(for flag: String) -> String {
+        flag.replacingOccurrences(of: "flag_", with: "").replacingOccurrences(of: "@3x.png", with: "").uppercased()
+    }
+
+    @objc private func loadImages() {
         let fileManager = FileManager.default
         let path = Bundle.main.resourcePath!
         let items = try! fileManager.contentsOfDirectory(atPath: path)
@@ -25,13 +36,14 @@ final class TableViewController: UITableViewController {
                 flags.append(item)
             }
         }
-    }
-    
-    func getCountryName(for flag: String) -> String {
-        flag.replacingOccurrences(of: "flag_", with: "").replacingOccurrences(of: "@3x.png", with: "").uppercased()
+
+        DispatchQueue.main.async { [weak self] in
+            self?.tableView.reloadData()
+        }
     }
 }
 
+// MARK: - UITableViewController
 extension TableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         flags.count
